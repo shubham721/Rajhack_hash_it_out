@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Previous Aadhar Data</title>
+    <meta name="viewport" content ="width=device-width, minimum-scale=1.0" />
+        <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+
+        body{
+            padding: 15px;
+        }
+
+        table{
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            border-spacing: 0;
+            font-size: .9em;
+        }
+
+        table caption{
+            padding: 5px;
+            font-size: 1.2em;
+        }
+
+        table th, table td{
+            padding: 10px 5px;
+        }
+
+        table th{
+            background-color: #333;
+            color: #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.7);
+        }
+
+        table td{
+            box-shadow: inset -1px -1px 5px rgba(0,0,0,.7);
+        }
+
+        table thead tr th{
+            border-radius: 5px;
+        }
+
+        table tbody tr:first-child th:first-child{
+            border-radius: 5px 0 0 0;
+        }
+
+        table tbody tr:last-child th:first-child{
+            border-radius: 0 0 0 5px;
+        }
+
+        table tbody tr:first-child td:last-child{
+            border-radius: 0 5px 0 0;
+        }
+
+        table tbody tr:last-child td:last-child{
+            border-radius: 0 0 5px 0;
+        }
+
+        .button_wrap{
+            margin: 0 auto;
+        }
+
+        .button_wrap button{
+            margin: 0 .3em;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+   
+    <script>
+        var db;
+        //database varsion setting
+        var version = 1.0;
+        //database name setting
+        var dbName = "aadhardb";
+        //database display name setting
+        var dbDisplayName = "aadhar_test_db";
+        //database size setting
+        var dbSize = 2 * 1024 * 1024;
+
+        function selectDB() {
+            if (window.openDatabase) {
+                //openDatabase(name, version, displayname, estimatedsize, callback);
+                db = openDatabase(dbName, version, dbDisplayName, dbSize);
+
+                dropTable(db);
+                createTable(db);
+
+                //inserting data in table
+                insertData(db, "13", "rdy","ABCD","2017-05-01","9956");
+                //insertData(db, "124", "rdx","ABCDE","2016-05-01","99566");
+                
+
+                dataView(db,2);
+
+            } else {
+                alert("Web SQL Database not supported in this browser");
+            }
+        }
+
+        //reads and displays values from the 'places' table
+        function dataView(db,flag) {
+            var html = document.getElementById("tbody01");
+            var ddlHtml = document.getElementById("ddlname");
+            html.innerHTML = "";
+            ddlHtml.innerHTML = "";
+
+           
+            	
+	            		 db.transaction(function (t) {
+
+	            		t.executeSql("SELECT * FROM aadharTable", [],
+	                function (tran, r) {
+	                    ddlHtml.innerHTML = "<option value='all'>all</option>";
+	                    for (var i = 0; i < r.rows.length; i++) {
+	                        var id = r.rows.item(i).id;
+	                        var adharId= r.rows.item(i).adharId;
+	                        var name = r.rows.item(i).name;
+	                        var address = r.rows.item(i).address;
+	                        var insertday = r.rows.item(i).insertDay;
+	                         var mobile = r.rows.item(i).mobile;
+
+	                        //data list rendering
+	                        if (html) {
+	                            html.innerHTML += "<tr><td>" + id + "</td><td>"+ adharId + "</td><td>"  + name + "</td><td>" + address + "</td><td>" + insertday +"</td><td>" + mobile + "</td></tr>";
+	                        }
+
+	                        //select box rendering
+	                        if (ddlHtml) {
+	                            ddlHtml.innerHTML += "<option value=" + id + ">" + name + "</option>";
+	                        }
+	                    }
+	                },
+	                function (t, e) { alert("Error:" + e.message); }
+	             );
+	            });
+            
+            
+                
+        }
+
+        // create table
+        function createTable(db) {
+            db.transaction(function (t) {
+                t.executeSql("CREATE TABLE aadharTable (id INTEGER PRIMARY KEY,adharId INTEGER, name TEXT, address TEXT, insertDay DATETIME,mobile INTEGER )", []);
+            });
+        }
+
+        //inserting data in table
+        function insertData(db, adharId,name,address,insertDay,mobile, context) {
+            db.transaction(function (e) {
+                //var day = new Date();
+                e.executeSql("INSERT INTO aadharTable(adharId ,name, address, insertDay,mobile) VALUES (?, ?, ?,?,?)", [adharId,name, address, insertDay,mobile], onSuccess, onError);
+            });
+        }
+
+        function onSuccess(e) { }
+        function onError(e) { }
+
+        // drop table
+        function dropTable(db) {
+            db.transaction(function (e) {
+                e.executeSql("DROP TABLE aadharTable");
+            });
+        }
+
+        //Select the data conditions
+        function dataChange(value) {
+            if (value != "all") {
+                var html = document.getElementById("tbody01");
+                html.innerHTML = "";
+                db.transaction(function (t) {
+                    t.executeSql("SELECT * FROM aadharTable WHERE id=?", [value],
+                function (tran, r) {
+                    for (var i = 0; i < r.rows.length; i++) {
+                        var id = r.rows.item(i).id;
+                        var name = r.rows.item(i).name;
+                        var adharId=r.rows.item(i).adharId;
+                        var address = r.rows.item(i).address;
+                        var insertday = r.rows.item(i).insertDay;
+                        var mobile = r.rows.item(i).mobile;
+
+                        if (html) {
+                            html.innerHTML += "<tr><td>" + id + "</td><td>" + adharId + "</td><td>" + name + "</td><td>" + address + "</td><td>" + insertday +"</td><td>" + mobile + "</td></tr>";
+                        }
+                    }
+                },
+                function (t, e) { alert("Error:" + e.message); }
+             );
+                });
+            } else {
+                dataView(db,2);
+            }
+        }
+
+        window.onload = function () {
+            selectDB();
+        };
+    </script>
+</head>
+<body>
+    <div style="float: right;">
+        <select id="ddlname" onchange="dataChange(this.value);">
+        </select>
+    </div>
+    <table>
+        <caption>
+           Previous Aadhar Data</caption>
+        <thead>
+            <tr>
+                <th>id</th>
+                 <th>adharId</th>
+                <th>name</th>
+                <th>address</th>
+                <th>DOB</th>
+                 <th>mobile No</th>
+
+            </tr>
+        </thead>
+        <tbody id="tbody01">
+        </tbody>
+    </table>
+    <center>
+    	<button  id="upload">start converting to blockchain</button>
+    </center>
+    
+        <table>
+        <caption>
+           New Aadhar Data</caption>
+        <thead>
+            <tr>
+                <th>id</th>
+                 <th>adharId</th>
+                 <th>Block Address</th>
+            </tr>
+        </thead>
+        <tbody id="tbody02">
+        </tbody>
+    </table>
+
+    <p id="test01">here man</p>
+</body>
+
+
+<script>
+	
+
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+    web3.eth.defaultAccount = web3.eth.accounts[0];
+    console.log(web3.eth.defaultAccount);
+     var AdharContract =web3.eth.contract([
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "getData",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            },
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "kill",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_adharId",
+                "type": "string"
+            },
+            {
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_dob",
+                "type": "string"
+            },
+            {
+                "name": "_perAddress",
+                "type": "string"
+            },
+            {
+                "name": "_mobile",
+                "type": "string"
+            }
+        ],
+        "name": "enrollData",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    }
+]);
+
+  var Adhar = AdharContract.at('0xd790a776130559af29bbdbc0a62a0592cbd9a19a');
+  
+  console.log(Adhar);
+   
+   Adhar.getData("125",function(error, result){
+            if(!error)
+                {
+                    $("#tbody02").html(result[0]+' ('+result[1]+'  you dont know what you get)');
+                    console.log(result);
+                }
+            else
+                console.error(error);
+        });
+
+        $("#upload").click(function() {
+           var TableData = new Array();
+			    
+			$('#tbody01 tr').each(function(row, tr){
+			    TableData[row]={
+			        "id" : $(tr).find('td:eq(0)').text()
+			        ,"adharId" : $(tr).find('td:eq(1)').text()
+			        , "name" :$(tr).find('td:eq(2)').text()
+			        , "address" : $(tr).find('td:eq(3)').text()
+			        , "dob" : $(tr).find('td:eq(4)').text()
+			         , "mobile" : $(tr).find('td:eq(5)').text()
+			    }
+			}); 
+			//TableData.shift(); 
+			for(var i=0;i<TableData.length;i++){
+				//console.log(TableData[i]);
+				var row=TableData[i];
+				Adhar.enrollData(row["adharId"],row["name"],row["address"],row["dob"],row["mobile"]);
+			}
+		
+});
+
+    </script>
+
+</html>

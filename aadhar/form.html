@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Previous Aadhar Data</title>
+    <meta name="viewport" content ="width=device-width, minimum-scale=1.0" />
+        <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+
+        body{
+            padding: 15px;
+        }
+
+        table{
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            border-spacing: 0;
+            font-size: .9em;
+        }
+
+        table caption{
+            padding: 5px;
+            font-size: 1.2em;
+        }
+
+        table th, table td{
+            padding: 10px 5px;
+        }
+
+        table th{
+            background-color: #333;
+            color: #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.7);
+        }
+
+        table td{
+            box-shadow: inset -1px -1px 5px rgba(0,0,0,.7);
+        }
+
+        table thead tr th{
+            border-radius: 5px;
+        }
+
+        table tbody tr:first-child th:first-child{
+            border-radius: 5px 0 0 0;
+        }
+
+        table tbody tr:last-child th:first-child{
+            border-radius: 0 0 0 5px;
+        }
+
+        table tbody tr:first-child td:last-child{
+            border-radius: 0 5px 0 0;
+        }
+
+        table tbody tr:last-child td:last-child{
+            border-radius: 0 0 5px 0;
+        }
+
+        .button_wrap{
+            margin: 0 auto;
+        }
+
+        .button_wrap button{
+            margin: 0 .3em;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+   
+    
+</head>
+<body>
+    <form>
+    	<ul>
+    		<li>Name:<input type="text" id="name" name="name"></li>
+    		<li>contact:<input type="text" id="contact" name="contact"></li>
+    		
+    	</ul>
+    </form>
+
+    <center>
+    	<button  id="upload">upload</button>
+    </center>
+    
+      
+
+    Adhar Id:<p id="test01"></p>
+</body>
+
+
+<script>
+	
+
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+    web3.eth.defaultAccount = web3.eth.accounts[0];
+    console.log(web3.eth.defaultAccount);
+     var AdharContract =web3.eth.contract([
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_adharId",
+                "type": "string"
+            },
+            {
+                "name": "_name",
+                "type": "string"
+            },
+            {
+                "name": "_mobile",
+                "type": "string"
+            }
+        ],
+        "name": "enrollData",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "kill",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "adharNum",
+                "type": "string"
+            }
+        ],
+        "name": "getData",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            },
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    }
+]);
+
+  var Adhar = AdharContract.at('0x8a610221b1f7d464ca5ad406faec6041d3748cb8');
+  
+  console.log(Adhar);
+   
+   /*Adhar.getData("123",function(error, result){
+            if(!error)
+                {
+                    $("#test01").html(result[0]+' ('+result[1]+'  you dont know what you get)');
+                    console.log(result);
+                }
+            else
+                console.error(error);
+        });
+        */
+
+        $("#upload").click(function() {
+          
+			    var adharId = Math.floor(1000 + Math.random() * 9000);
+			    $("#test01").text(adharId);
+			    var name=$("#name").val();
+			    var contact=$("#contact").val();
+
+			    console.log(adharId.toString()+" "+name+" "+contact);
+			    Adhar.enrollData(adharId.toString(),name,contact);
+			
+			
+			
+			//TableData.shift(); 
+			
+				
+		
+});
+
+    </script>
+
+</html>
